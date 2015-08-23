@@ -1,0 +1,9 @@
+{
+  "firebase": "graph-data",
+  "public": ".",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
