@@ -5,6 +5,7 @@ require.config({
     bootstrap: 'bower_components/bootstrap/dist/js/bootstrap.min',
     colorpicker: 'bower_components/xaguilars-bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min',
     d3: 'bower_components/d3/d3.v2.min',
+    firebase: 'bower_components/firebase/firebase',
     jquery: 'bower_components/jquery/dist/jquery.min',
     underscore: 'bower_components/underscore/underscore-min',
 
@@ -25,6 +26,6 @@ require.config({
   }
 });
 
-require( [ 'myView', 'bootstrap', 'colorpicker' ], function( MyView ) {
+require( [ 'myView', 'bootstrap', 'colorpicker', 'firebase' ], function( MyView ) {
   new MyView();
 } );

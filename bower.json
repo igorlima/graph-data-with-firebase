@@ -9,6 +9,7 @@
     "backbone": "~1.2.1",
     "bootstrap": "~3.3.5",
     "d3": "~2.10.3",
+    "firebase":"~2.2.9",
     "jquery": "~2.1.4",
     "requirejs-bower": "~2.1.19",
     "underscore": "~1.8.3",

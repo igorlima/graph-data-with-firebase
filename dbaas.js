@@ -1,74 +1,137 @@
-define(['jquery', 'backbone', 'io'], function($, Backbone, io) {
-  var Channel;
-
-  var socket = io();
+define(['jquery', 'backbone'], function($, Backbone) {
+  var Channel, firebaseRef, vertexRef, edgeRef;
+  // vertexRef. orderByKey().equalTo('-JxQM_fQTywKZtwOs90V').limitToFirst(1).once('value', function(data){debugger})
+  // Object.keys( data.val() )[0]
 
   Channel = $.extend( {}, Backbone.Events );
+  ref       = new Firebase("https://graph-data.firebaseio.com");
+  vertexRef = ref.child('vertex');
+  edgeRef   = ref.child('edge');
 
   Channel.on('disconnect', function() {
     console.warn('disconnected');
   });
 
   Channel.on('retrieve-all-nodes', function() {
-    socket.emit('retrieve-all-nodes');
-    socket.on( 'node-added', function(node) {
-      Channel.trigger( 'node-added', node );
-    } );
+    vertexRef.on('child_added', function(data) {
 
-    socket.on( 'node-edited', function(node) {
-      Channel.trigger( 'node-edited', node );
-    } );
+      var isPlainObject = $.isPlainObject( data.val() );
+      if ( !isPlainObject ) {
+        vertexRef.child( data.key() ).remove();
+        return;
+      }
 
-    socket.on( 'node-removed', function(node) {
-      Channel.trigger( 'node-removed', node );
-    } );
+      Channel.trigger( 'node-added', {
+        id: data.key(),
+        label: data.val().label,
+        color: data.val().color
+      } );
+    });
 
-    socket.on( 'link-added', function(link) {
-      Channel.trigger( 'link-added', link );
-    } );
+    vertexRef.on('child_changed', function(data) {
+      Channel.trigger( 'node-edited', {
+        id: data.key(),
+        label: data.val().label,
+        color: data.val().color
+      } );
+    });
 
-    socket.on( 'link-removed', function(link) {
-      Channel.trigger( 'link-removed', link );
-    } );
+    vertexRef.on('child_removed', function(data) {
+      Channel.trigger( 'node-removed', {
+        id: data.key()
+      } );
+    });
+
+    edgeRef.on('child_added', function(data) {
+      var link = data.val(),
+          isPlainObject = $.isPlainObject( link );
+
+      if ( !isPlainObject || !link.source || !link.target || !link.source.id || !link.target.id ) {
+        vertexRef.child( data.key() ).remove();
+        return;
+      }
+
+      Channel.trigger( 'link-added', {
+        id: data.key(),
+        source: {
+          id: data.val().source.id,
+        },
+        target: {
+          id: data.val().target.id
+        }
+      } );
+    });
+
+    edgeRef.on('child_removed', function(data) {
+      var link = data.val(),
+          isPlainObject = $.isPlainObject( link );
+
+      if ( !isPlainObject || !link.source || !link.target || !link.source.id || !link.target.id ) {
+        return;
+      }
+
+      Channel.trigger( 'link-removed', {
+        id: data.key(),
+        source: {
+          id: data.val().source.id,
+        },
+        target: {
+          id: data.val().target.id
+        }
+      } );
+    });
 
   });
 
   Channel.on('add-node', function( node, cb ) {
-    socket.emit( 'add-node', node, function(obj) {
+    var vertex = vertexRef.push({
+      label: node.label || '',
+      color: node.color || ''
+    }, function() {
       if (cb) {
-        node.id = obj.id;
+        node.id = vertex.key();
         cb(node);
       }
-    } );
+    });
   });
 
   Channel.on('edit-node', function(node) {
     if (node && node.id) {
-      socket.emit( 'edit-node', node );
+      vertexRef.child(node.id).update({
+        label: node.label || '',
+        color: node.color || ''
+      });
     }
   } );
 
   Channel.on('remove-node', function(node) {
     if (node && node.id) {
-      socket.emit( 'remove-node', node );
+      vertexRef.child(node.id).remove();
     }
   });
 
   Channel.on('add-link', function(link) {
     if (!link || !link.source || !link.target || !link.source.id || !link.target.id) return;
 
-    socket.emit( 'add-link', link, function(obj) {
-      link.id = obj.id;
+    var edge = edgeRef.push({
+      source: {
+        id: link.source.id
+      },
+      target: {
+        id: link.target.id
+      }
+    }, function() {
+      link.id = edge.key();
       Channel.trigger( 'link-added', link );
-    } );
+    });
 
   });
 
   Channel.on('remove-link', function(link) {
     if (link && link.id) {
-      socket.emit( 'remove-link', link, function() {
+      edgeRef.child(link.id).remove(function() {
         Channel.trigger( 'link-removed', link );
-      } );
+      });
     }
   });
 
