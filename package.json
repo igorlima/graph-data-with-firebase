@@ -1,13 +1,9 @@
 {
-  "name": "pubsub-with-backbone-events",
+  "name": "graph-data-with-firebase",
   "version": "0.0.1",
   "dependencies": {
     "express": "~3.4.7",
-    "body-parser": "~1.13.1",
-    "mongoose": "~4.1.2",
-    "socket.io": "~1.3.6",
-    "bower": "~1.4.1",
-    "extend": "~3.0.0"
+    "bower": "~1.4.1"
   },
   "engines": {
     "node": ">=0.10.25"
