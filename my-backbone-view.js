@@ -5,6 +5,7 @@ define(['jquery', 'backbone', 'myModel', 'forceView'], function($, Backbone, MyM
     el: 'body',
     events: {
       'click button.add-node': 'addNode',
+      'click button.remove-all-nodes': 'removeAllNodes',
       'click #editNodeModal button.btn.btn-primary': 'editNode',
       'change #textNode': 'textChanged',
       'changeColor #textColorNode': 'colorChanged'
@@ -50,6 +51,10 @@ define(['jquery', 'backbone', 'myModel', 'forceView'], function($, Backbone, MyM
       this.mediatorChannel.trigger('add-node');
     },
 
+    removeAllNodes: function() {
+      this.mediatorChannel.trigger('remove-all-nodes');
+    },
+
     sync: function() {
       var view = this;
 
@@ -68,6 +73,10 @@ define(['jquery', 'backbone', 'myModel', 'forceView'], function($, Backbone, MyM
     syncWithDBaaS: function() {
       var mediatorChannel = this.mediatorChannel;
       require(['dbaas'], function(dbaas) {
+
+        mediatorChannel.on('remove-all-nodes', function() {
+          dbaas.trigger('remove-all-nodes');
+        });
 
         mediatorChannel.on('remove-node', function(node) {
           dbaas.trigger('remove-node', node);

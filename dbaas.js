@@ -40,6 +40,10 @@ define(['jquery', 'backbone'], function($, Backbone) {
     console.warn('disconnected');
   });
 
+  Channel.on('remove-all-nodes', function() {
+    ref.set( {} );
+  });
+
   Channel.on('retrieve-all-nodes', function() {
     vertexRef.on('child_added', function(data) {
 
